@@ -4,15 +4,30 @@ import { ChatMessage } from "@/components/ChatMessage";
 import { ChatInput } from "@/components/ChatInput";
 import { SuggestionChips } from "@/components/SuggestionChips";
 import { TypingIndicator } from "@/components/TypingIndicator";
+import { ChatSidebar } from "@/components/ChatSidebar";
 import { streamChat, type Message } from "@/lib/chat";
+import { useConversations } from "@/hooks/use-conversations";
 import { useToast } from "@/hooks/use-toast";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Sun } from "lucide-react";
 
 const Index = () => {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const {
+    conversations,
+    activeId,
+    activeConversation,
+    createConversation,
+    updateMessages,
+    deleteConversation,
+    selectConversation,
+    startNew,
+  } = useConversations();
+
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+
+  const messages = activeConversation?.messages ?? [];
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -21,24 +36,28 @@ const Index = () => {
   }, [messages, isLoading]);
 
   const send = async (input: string) => {
+    let currentId = activeId;
+    let currentMessages = messages;
+
+    if (!currentId) {
+      currentId = createConversation();
+      currentMessages = [];
+    }
+
     const userMsg: Message = { role: "user", content: input };
-    const newMessages = [...messages, userMsg];
-    setMessages(newMessages);
+    const newMessages = [...currentMessages, userMsg];
+    updateMessages(currentId, newMessages);
     setIsLoading(true);
 
     let assistantSoFar = "";
 
     const upsert = (chunk: string) => {
       assistantSoFar += chunk;
-      setMessages((prev) => {
-        const last = prev[prev.length - 1];
-        if (last?.role === "assistant") {
-          return prev.map((m, i) =>
-            i === prev.length - 1 ? { ...m, content: assistantSoFar } : m
-          );
-        }
-        return [...prev, { role: "assistant", content: assistantSoFar }];
-      });
+      const updated = [
+        ...newMessages,
+        { role: "assistant" as const, content: assistantSoFar },
+      ];
+      updateMessages(currentId!, updated);
     };
 
     try {
@@ -64,47 +83,64 @@ const Index = () => {
   const showWelcome = messages.length === 0;
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-background p-4">
-      <div className="w-full max-w-2xl h-[85vh] flex flex-col rounded-2xl border border-border bg-card shadow-xl overflow-hidden">
-        <ChatHeader />
+    <SidebarProvider>
+      <div className="flex min-h-screen w-full">
+        <ChatSidebar
+          conversations={conversations}
+          activeId={activeId}
+          onSelect={selectConversation}
+          onNew={startNew}
+          onDelete={deleteConversation}
+        />
 
-        <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-4">
-          {showWelcome && (
-            <div className="flex flex-col items-center justify-center h-full gap-6 text-center animate-fade-in">
-              <div className="w-16 h-16 rounded-2xl gradient-warm shadow-warm flex items-center justify-center">
-                <Sun className="w-8 h-8 text-primary-foreground" />
+        <main className="flex-1 flex items-center justify-center bg-background p-4">
+          <div className="w-full max-w-2xl h-[85vh] flex flex-col rounded-2xl border border-border bg-card shadow-xl overflow-hidden">
+            <div className="relative">
+              <ChatHeader />
+              <div className="absolute left-3 top-1/2 -translate-y-1/2 z-10">
+                <SidebarTrigger className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10" />
               </div>
-              <div>
-                <h2 className="text-xl font-heading font-semibold text-foreground mb-2">
-                  Welcome to Daylight Support
-                </h2>
-                <p className="text-muted-foreground text-sm max-w-md font-body">
-                  I can help with device setup, troubleshooting, Sol:OS features,
-                  accessories, and more. What can I help you with?
-                </p>
-              </div>
-              <SuggestionChips onSelect={send} disabled={isLoading} />
             </div>
-          )}
 
-          {messages.map((msg, i) => (
-            <ChatMessage key={i} message={msg} />
-          ))}
+            <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-4">
+              {showWelcome && (
+                <div className="flex flex-col items-center justify-center h-full gap-6 text-center animate-fade-in">
+                  <div className="w-16 h-16 rounded-2xl gradient-warm shadow-warm flex items-center justify-center">
+                    <Sun className="w-8 h-8 text-primary-foreground" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-heading font-semibold text-foreground mb-2">
+                      Welcome to Daylight Support
+                    </h2>
+                    <p className="text-muted-foreground text-sm max-w-md font-body">
+                      I can help with device setup, troubleshooting, Sol:OS features,
+                      accessories, and more. What can I help you with?
+                    </p>
+                  </div>
+                  <SuggestionChips onSelect={send} disabled={isLoading} />
+                </div>
+              )}
 
-          {isLoading && messages[messages.length - 1]?.role === "user" && (
-            <TypingIndicator />
-          )}
-        </div>
+              {messages.map((msg, i) => (
+                <ChatMessage key={i} message={msg} />
+              ))}
 
-        {!showWelcome && (
-          <div className="px-6 pb-2">
-            <SuggestionChips onSelect={send} disabled={isLoading} />
+              {isLoading && messages[messages.length - 1]?.role === "user" && (
+                <TypingIndicator />
+              )}
+            </div>
+
+            {!showWelcome && (
+              <div className="px-6 pb-2">
+                <SuggestionChips onSelect={send} disabled={isLoading} />
+              </div>
+            )}
+
+            <ChatInput onSend={send} disabled={isLoading} />
           </div>
-        )}
-
-        <ChatInput onSend={send} disabled={isLoading} />
+        </main>
       </div>
-    </div>
+    </SidebarProvider>
   );
 };
 
