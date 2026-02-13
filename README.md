@@ -6,7 +6,7 @@ The assistant uses Retrieval-Augmented Generation (RAG) to answer customer quest
 
 ## Features
 
-- **AI Chat** — Streaming responses powered by Gemini via Lovable AI Gateway
+- **AI Chat** — Streaming responses powered by Google Gemini 2.5 Flash
 - **RAG Pipeline** — Postgres full-text search retrieves relevant knowledge base articles to ground responses
 - **87 FAQ Q&A Pairs** — Covering Order, Device, Software, Company, Health, Work With Us, and more
 - **12 Support Guides** — Detailed guides from support.daylightcomputer.com
@@ -19,7 +19,7 @@ The assistant uses Retrieval-Augmented Generation (RAG) to answer customer quest
 
 - **Frontend**: React 18, TypeScript, Vite, Tailwind CSS, shadcn/ui
 - **Backend**: Supabase — Postgres database, Edge Functions
-- **AI**: Google Gemini 3 Flash via Lovable AI Gateway
+- **AI**: Google Gemini 2.5 Flash (via Google AI API)
 - **Search**: Postgres `tsvector` full-text search (no external embeddings needed)
 
 ## Prerequisites
@@ -28,6 +28,7 @@ The assistant uses Retrieval-Augmented Generation (RAG) to answer customer quest
 - [Supabase CLI](https://supabase.com/docs/guides/cli/getting-started) (`npm install -g supabase`)
 - [Deno](https://deno.land/) (for edge function development)
 - A Supabase project (free tier works) — [create one here](https://supabase.com/dashboard)
+- A Google Cloud API key for Gemini — [get one here](https://aistudio.google.com/app/apikey)
 
 ## Local Setup (Without Lovable)
 
@@ -74,10 +75,13 @@ This creates the `knowledge_base`, `chat_interactions`, and `support_tickets` ta
 
 ### 6. Set edge function secrets
 
-The `chat` edge function requires a `LOVABLE_API_KEY` secret for the AI gateway:
+The `chat` edge function requires a `GEMINI_API_KEY` secret for Google's Gemini API:
+
+1. Get your API key from [Google AI Studio](https://aistudio.google.com/app/apikey)
+2. Set it in your Supabase project:
 
 ```sh
-supabase secrets set LOVABLE_API_KEY=<your-lovable-api-key>
+supabase secrets set GEMINI_API_KEY=<your-gemini-api-key>
 ```
 
 > **Note**: `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are automatically available in edge functions — you don't need to set them.
