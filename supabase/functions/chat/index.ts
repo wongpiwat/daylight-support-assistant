@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { GoogleGenAI } from "https://esm.sh/@google/genai@0.14.1";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -41,8 +42,8 @@ serve(async (req) => {
 
   try {
     const { messages, conversation_id } = await req.json();
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+    const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
+    if (!GEMINI_API_KEY) throw new Error("GEMINI_API_KEY is not configured");
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -85,49 +86,53 @@ serve(async (req) => {
       }
     }
 
-    const systemMessage = SYSTEM_PROMPT + ragContext;
+    const systemInstruction = SYSTEM_PROMPT + ragContext;
 
-    const response = await fetch(
-      "https://ai.gateway.lovable.dev/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${LOVABLE_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "google/gemini-3-flash-preview",
-          messages: [
-            { role: "system", content: systemMessage },
-            ...messages,
-          ],
-          stream: true,
-        }),
-      }
-    );
+    // Convert messages to Gemini format
+    const geminiContents = messages.map((m: any) => ({
+      role: m.role === "assistant" ? "model" : "user",
+      parts: [{ text: m.content }],
+    }));
 
-    if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(
-          JSON.stringify({ error: "Rate limit exceeded. Please try again in a moment." }),
-          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-      if (response.status === 402) {
-        return new Response(
-          JSON.stringify({ error: "Service temporarily unavailable. Please try again later." }),
-          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-      const t = await response.text();
-      console.error("AI gateway error:", response.status, t);
-      return new Response(
-        JSON.stringify({ error: "Failed to get response" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
+    const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 
-    return new Response(response.body, {
+    const response = await ai.models.generateContentStream({
+      model: "gemini-3-flash-preview",
+      contents: geminiContents,
+      config: {
+        systemInstruction,
+      },
+    });
+
+    // Convert Gemini stream to SSE format compatible with existing frontend
+    const encoder = new TextEncoder();
+    const stream = new ReadableStream({
+      async start(controller) {
+        try {
+          for await (const chunk of response) {
+            const text = chunk.text;
+            if (text) {
+              const sseData = JSON.stringify({
+                choices: [{ delta: { content: text } }],
+              });
+              controller.enqueue(encoder.encode(`data: ${sseData}\n\n`));
+            }
+          }
+          controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+          controller.close();
+        } catch (e) {
+          console.error("Stream error:", e);
+          const errorMsg = e instanceof Error ? e.message : "Stream error";
+          if (errorMsg.includes("429") || errorMsg.includes("RESOURCE_EXHAUSTED")) {
+            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ error: "Rate limit exceeded" })}\n\n`));
+          }
+          controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+          controller.close();
+        }
+      },
+    });
+
+    return new Response(stream, {
       headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
     });
   } catch (e) {
