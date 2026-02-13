@@ -1,4 +1,5 @@
-import { Sun, Plus, MessageSquare, Trash2 } from "lucide-react";
+import { Sun, Plus, MessageSquare, Trash2, BarChart3 } from "lucide-react";
+import { Link } from "react-router-dom";
 import {
   Sidebar,
   SidebarContent,
@@ -99,7 +100,13 @@ export function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="p-4">
+      <SidebarFooter className="p-4 space-y-2">
+        <Link to="/analytics">
+          <Button variant="outline" size="sm" className="w-full gap-2 text-xs font-body">
+            <BarChart3 className="w-3.5 h-3.5" />
+            Analytics Dashboard
+          </Button>
+        </Link>
         <p className="text-[10px] text-muted-foreground text-center">
           Powered by Daylight AI
         </p>
