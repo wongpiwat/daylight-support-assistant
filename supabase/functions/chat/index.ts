@@ -97,7 +97,7 @@ serve(async (req) => {
     const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 
     const response = await ai.models.generateContentStream({
-      model: "gemini-3-flash-preview",
+      model: "gemini-2.5-flash",
       contents: geminiContents,
       config: {
         systemInstruction,
