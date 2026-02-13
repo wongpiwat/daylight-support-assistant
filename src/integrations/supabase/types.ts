@@ -14,13 +14,139 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      chat_interactions: {
+        Row: {
+          ai_response: string | null
+          conversation_id: string
+          created_at: string
+          feedback: string | null
+          id: string
+          matched_articles: string[] | null
+          user_query: string
+          was_deflected: boolean | null
+        }
+        Insert: {
+          ai_response?: string | null
+          conversation_id: string
+          created_at?: string
+          feedback?: string | null
+          id?: string
+          matched_articles?: string[] | null
+          user_query: string
+          was_deflected?: boolean | null
+        }
+        Update: {
+          ai_response?: string | null
+          conversation_id?: string
+          created_at?: string
+          feedback?: string | null
+          id?: string
+          matched_articles?: string[] | null
+          user_query?: string
+          was_deflected?: boolean | null
+        }
+        Relationships: []
+      }
+      knowledge_base: {
+        Row: {
+          category: string
+          content: string
+          created_at: string
+          id: string
+          search_vector: unknown
+          source_url: string | null
+          tags: string[] | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          content: string
+          created_at?: string
+          id?: string
+          search_vector?: unknown
+          source_url?: string | null
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          content?: string
+          created_at?: string
+          id?: string
+          search_vector?: unknown
+          source_url?: string | null
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      support_tickets: {
+        Row: {
+          ai_confidence: number | null
+          category: string | null
+          conversation_id: string | null
+          created_at: string
+          description: string
+          id: string
+          is_synthetic: boolean
+          priority: string | null
+          resolution_source: string | null
+          resolved_at: string | null
+          status: string
+          subject: string
+          user_satisfied: boolean | null
+        }
+        Insert: {
+          ai_confidence?: number | null
+          category?: string | null
+          conversation_id?: string | null
+          created_at?: string
+          description: string
+          id?: string
+          is_synthetic?: boolean
+          priority?: string | null
+          resolution_source?: string | null
+          resolved_at?: string | null
+          status?: string
+          subject: string
+          user_satisfied?: boolean | null
+        }
+        Update: {
+          ai_confidence?: number | null
+          category?: string | null
+          conversation_id?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          is_synthetic?: boolean
+          priority?: string | null
+          resolution_source?: string | null
+          resolved_at?: string | null
+          status?: string
+          subject?: string
+          user_satisfied?: boolean | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      search_knowledge_base: {
+        Args: { match_count?: number; search_query: string }
+        Returns: {
+          category: string
+          content: string
+          id: string
+          rank: number
+          tags: string[]
+          title: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

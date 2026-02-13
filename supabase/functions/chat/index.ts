@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -23,6 +24,7 @@ Guidelines:
 - If you're unsure about something, say so honestly and recommend contacting the Daylight support team
 - Format responses with clear headings and bullet points when listing steps
 - Keep answers focused — don't overwhelm with information
+- IMPORTANT: When you use information from the provided knowledge base articles, cite the article title naturally (e.g. "According to our guide on [Title]...")
 
 Key Daylight products and terms:
 - DC-1: Daylight's flagship computer with a reflective display
@@ -38,9 +40,48 @@ serve(async (req) => {
   }
 
   try {
-    const { messages } = await req.json();
+    const { messages, conversation_id } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // RAG: Extract user's latest query and search knowledge base
+    const latestUserMsg = [...messages].reverse().find((m: any) => m.role === "user");
+    let ragContext = "";
+    let matchedArticleIds: string[] = [];
+
+    if (latestUserMsg) {
+      const { data: articles } = await supabase.rpc("search_knowledge_base", {
+        search_query: latestUserMsg.content,
+        match_count: 3,
+      });
+
+      if (articles && articles.length > 0) {
+        matchedArticleIds = articles.map((a: any) => a.id);
+        ragContext = "\n\n---\nRELEVANT KNOWLEDGE BASE ARTICLES:\n\n" +
+          articles.map((a: any, i: number) =>
+            `[Article ${i + 1}: "${a.title}" | Category: ${a.category}]\n${a.content}`
+          ).join("\n\n") +
+          "\n---\nUse the above articles to inform your answer. If the articles are relevant, base your response on them. If not, answer from your general knowledge.\n";
+      }
+
+      // Log the interaction
+      try {
+        await supabase.from("chat_interactions").insert({
+          conversation_id: conversation_id || "anonymous",
+          user_query: latestUserMsg.content,
+          matched_articles: matchedArticleIds,
+          was_deflected: matchedArticleIds.length > 0,
+        });
+      } catch (e) {
+        console.error("Failed to log interaction:", e);
+      }
+    }
+
+    const systemMessage = SYSTEM_PROMPT + ragContext;
 
     const response = await fetch(
       "https://ai.gateway.lovable.dev/v1/chat/completions",
@@ -53,7 +94,7 @@ serve(async (req) => {
         body: JSON.stringify({
           model: "google/gemini-3-flash-preview",
           messages: [
-            { role: "system", content: SYSTEM_PROMPT },
+            { role: "system", content: systemMessage },
             ...messages,
           ],
           stream: true,
