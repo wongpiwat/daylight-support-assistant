@@ -51,13 +51,24 @@ export function ChatMessage({ message }: ChatMessageProps) {
                   Sources
                 </div>
                 <div className="space-y-1">
-                  {message.articles.map((article) => (
-                    <div key={article.id} className="text-xs opacity-75">
-                      • <span className="font-medium">{article.title}</span>
-                      {article.category && <span className="opacity-60"> ({article.category})</span>}
-                    </div>
-                  ))}
-                </div>
+                   {message.articles.map((article) => (
+                     <div key={article.id} className="text-xs opacity-75">
+                       • {article.source_url ? (
+                         <a 
+                           href={article.source_url} 
+                           target="_blank" 
+                           rel="noopener noreferrer"
+                           className="font-medium text-primary hover:underline"
+                         >
+                           {article.title}
+                         </a>
+                       ) : (
+                         <span className="font-medium">{article.title}</span>
+                       )}
+                       {article.category && <span className="opacity-60"> ({article.category})</span>}
+                     </div>
+                   ))}
+                 </div>
               </div>
             )}
           </div>
