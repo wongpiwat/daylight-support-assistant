@@ -143,6 +143,7 @@ export type Database = {
           content: string
           id: string
           rank: number
+          source_url: string
           tags: string[]
           title: string
         }[]
