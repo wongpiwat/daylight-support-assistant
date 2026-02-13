@@ -5,7 +5,7 @@ import { ChatInput } from "@/components/ChatInput";
 import { SuggestionChips } from "@/components/SuggestionChips";
 import { TypingIndicator } from "@/components/TypingIndicator";
 import { ChatSidebar } from "@/components/ChatSidebar";
-import { streamChat, type Message } from "@/lib/chat";
+import { streamChat, type Message, type Article } from "@/lib/chat";
 import { useConversations } from "@/hooks/use-conversations";
 import { useToast } from "@/hooks/use-toast";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
@@ -50,12 +50,13 @@ const Index = () => {
     setIsLoading(true);
 
     let assistantSoFar = "";
+    let currentArticles: Article[] = [];
 
     const upsert = (chunk: string) => {
       assistantSoFar += chunk;
       const updated = [
         ...newMessages,
-        { role: "assistant" as const, content: assistantSoFar },
+        { role: "assistant" as const, content: assistantSoFar, articles: currentArticles },
       ];
       updateMessages(currentId!, updated);
     };
@@ -68,6 +69,14 @@ const Index = () => {
         onError: (error) => {
           setIsLoading(false);
           toast({ title: "Error", description: error, variant: "destructive" });
+        },
+        onArticles: (articles) => {
+          currentArticles = articles;
+          const updated = [
+            ...newMessages,
+            { role: "assistant" as const, content: assistantSoFar, articles },
+          ];
+          updateMessages(currentId!, updated);
         },
       });
     } catch {
