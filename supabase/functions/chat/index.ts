@@ -51,7 +51,7 @@ serve(async (req) => {
     // RAG: Extract user's latest query and search knowledge base
     const latestUserMsg = [...messages].reverse().find((m: any) => m.role === "user");
     let ragContext = "";
-    let matchedArticleIds: string[] = [];
+    let matchedArticles: Array<{ id: string; title: string; category: string }> = [];
 
     if (latestUserMsg) {
       const { data: articles } = await supabase.rpc("search_knowledge_base", {
@@ -60,7 +60,11 @@ serve(async (req) => {
       });
 
       if (articles && articles.length > 0) {
-        matchedArticleIds = articles.map((a: any) => a.id);
+        matchedArticles = articles.map((a: any) => ({
+          id: a.id,
+          title: a.title,
+          category: a.category,
+        }));
         ragContext = "\n\n---\nRELEVANT KNOWLEDGE BASE ARTICLES:\n\n" +
           articles.map((a: any, i: number) =>
             `[Article ${i + 1}: "${a.title}" | Category: ${a.category}]\n${a.content}`
@@ -73,8 +77,8 @@ serve(async (req) => {
         await supabase.from("chat_interactions").insert({
           conversation_id: conversation_id || "anonymous",
           user_query: latestUserMsg.content,
-          matched_articles: matchedArticleIds,
-          was_deflected: matchedArticleIds.length > 0,
+          matched_articles: matchedArticles.map((a) => a.id),
+          was_deflected: matchedArticles.length > 0,
         });
       } catch (e) {
         console.error("Failed to log interaction:", e);

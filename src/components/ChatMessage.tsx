@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import type { Message } from "@/lib/chat";
 import ReactMarkdown from "react-markdown";
-import { Bot, User } from "lucide-react";
+import { Bot, User, BookOpen } from "lucide-react";
 
 interface ChatMessageProps {
   message: Message;
@@ -40,8 +40,26 @@ export function ChatMessage({ message }: ChatMessageProps) {
         {isUser ? (
           <p>{message.content}</p>
         ) : (
-          <div className="prose prose-sm max-w-none dark:prose-invert prose-p:my-1 prose-ul:my-1 prose-li:my-0.5 prose-headings:my-2 prose-headings:font-heading">
-            <ReactMarkdown>{message.content}</ReactMarkdown>
+          <div>
+            <div className="prose prose-sm max-w-none dark:prose-invert prose-p:my-1 prose-ul:my-1 prose-li:my-0.5 prose-headings:my-2 prose-headings:font-heading">
+              <ReactMarkdown>{message.content}</ReactMarkdown>
+            </div>
+            {message.articles && message.articles.length > 0 && (
+              <div className="mt-3 pt-3 border-t border-current/20">
+                <div className="text-xs font-semibold opacity-75 mb-2 flex items-center gap-1">
+                  <BookOpen className="w-3 h-3" />
+                  Sources
+                </div>
+                <div className="space-y-1">
+                  {message.articles.map((article) => (
+                    <div key={article.id} className="text-xs opacity-75">
+                      • <span className="font-medium">{article.title}</span>
+                      {article.category && <span className="opacity-60"> ({article.category})</span>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
