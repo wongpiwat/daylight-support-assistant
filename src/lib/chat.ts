@@ -2,6 +2,7 @@ export type Article = {
   id: string;
   title: string;
   category: string;
+  source_url?: string;
 };
 
 export type Message = {
@@ -42,13 +43,14 @@ export async function streamChat({
         match_count: 3,
       });
       if (articles && articles.length > 0) {
-        articlesToShow = articles.map((a: any) => ({
-          id: a.id,
-          title: a.title,
-          category: a.category,
-        }));
-        onArticles?.(articlesToShow);
-      }
+         articlesToShow = articles.map((a: any) => ({
+           id: a.id,
+           title: a.title,
+           category: a.category,
+           source_url: a.source_url,
+         }));
+         onArticles?.(articlesToShow);
+       }
     } catch (e) {
       // Article search failed, that's ok
     }
