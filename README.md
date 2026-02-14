@@ -127,11 +127,11 @@ curl -X POST https://<your-project-ref>.supabase.co/functions/v1/seed-data \
 npm run dev
 ```
 
-The app will be available at `http://localhost:5173`.
+The app will be available at `http://localhost:8080`.
 
 ### 10. Verify the setup
 
-Open the app and ask **"Can I pay in BTC?"** — the assistant should respond with accurate information and cite the source article.
+Open the app and ask **"What is the Daylight DC-1?"** — the assistant should respond with accurate information and cite the source article.
 
 ## Developing Edge Functions Locally
 

@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 
 const suggestions = [
-  { label: "What is DC-1?", icon: Info },
+  { label: "What is Daylight DC-1?", icon: Info },
   { label: "What is the spec of DC-1?", icon: FileText },
   { label: "How do I reset my DC-1?", icon: RotateCcw },
   { label: "Set up Ethernet connection", icon: Wifi },
