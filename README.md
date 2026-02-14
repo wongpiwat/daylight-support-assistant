@@ -8,9 +8,9 @@ The assistant uses Retrieval-Augmented Generation (RAG) to answer customer quest
 
 <img width="480" alt="Daylight Support Assistant chat interface" src="https://github.com/user-attachments/assets/96b633ca-f6ea-4db5-bf77-428942c673a6" /></br>
 
-<img width="480" alt="Chat with source citations" src="https://github.com/user-attachments/assets/70cc1b8b-67a0-445d-913b-da44e5a86744" />
+<img width="400" alt="Chat with source citations" src="https://github.com/user-attachments/assets/70cc1b8b-67a0-445d-913b-da44e5a86744" />
 
-<img width="480" alt="Analytics dashboard" src="https://github.com/user-attachments/assets/40965856-742f-49fc-bb9e-ce21d6e2ab62" />
+<img width="400" alt="Chat with source citations" src="https://github.com/user-attachments/assets/40965856-742f-49fc-bb9e-ce21d6e2ab62" />
 
 ## Features
 
