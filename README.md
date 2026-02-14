@@ -38,7 +38,7 @@ The assistant uses Retrieval-Augmented Generation (RAG) to answer customer quest
 - A Supabase project (free tier works) — [create one here](https://supabase.com/dashboard)
 - A Google Cloud API key for Gemini — [get one here](https://aistudio.google.com/app/apikey)
 
-## Local Setup (Without Lovable)
+## Local Setup
 
 ### 1. Clone the repository
 
@@ -206,19 +206,9 @@ supabase/
 
 ## Deployment
 
-### Via Lovable
-
-Open [Lovable](https://lovable.dev) and click **Share → Publish**.
-
 ### Via Supabase CLI (self-hosted)
 
 1. Deploy edge functions: `supabase functions deploy`
 2. Push database migrations: `supabase db push`
 3. Build the frontend: `npm run build`
 4. Host the `dist/` folder on any static hosting provider (Vercel, Netlify, Cloudflare Pages, etc.)
-
-## Custom Domain
-
-If using Lovable: Navigate to **Project → Settings → Domains → Connect Domain**.
-
-See: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
