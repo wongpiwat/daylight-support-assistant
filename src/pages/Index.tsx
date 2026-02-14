@@ -105,7 +105,7 @@ const Index = () => {
         />
 
         <main className="flex-1 flex items-center justify-center bg-background p-4">
-          <div className="w-full max-w-2xl h-[85vh] flex flex-col rounded-2xl border border-border bg-card shadow-xl overflow-hidden">
+          <div className="w-full max-w-4xl h-[95vh] flex flex-col rounded-2xl border border-border bg-card shadow-xl overflow-hidden">
             <div className="gradient-warm px-6 py-5 flex items-center gap-3 shadow-warm">
               <SidebarTrigger className="h-12 w-12 text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10" />
               <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary-foreground/20 backdrop-blur-sm">
