@@ -4,6 +4,14 @@ An AI-powered customer support chatbot for [Daylight Computer](https://daylightc
 
 The assistant uses Retrieval-Augmented Generation (RAG) to answer customer questions about the DC-1 computer, Sol:OS, accessories, orders, and more — drawing from a curated knowledge base of support guides and FAQ content.
 
+## Screenshots
+
+<img width="480" alt="Daylight Support Assistant chat interface" src="https://github.com/user-attachments/assets/96b633ca-f6ea-4db5-bf77-428942c673a6" /></br>
+
+<img width="480" alt="Chat with source citations" src="https://github.com/user-attachments/assets/70cc1b8b-67a0-445d-913b-da44e5a86744" />
+
+<img width="480" alt="Analytics dashboard" src="https://github.com/user-attachments/assets/40965856-742f-49fc-bb9e-ce21d6e2ab62" />
+
 ## Features
 
 - **AI Chat** — Streaming responses powered by Google Gemini 2.5 Flash
