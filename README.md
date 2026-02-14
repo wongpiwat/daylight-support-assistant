@@ -204,11 +204,120 @@ supabase/
 4. Gemini generates a response grounded in the knowledge base content
 5. Response streams back to the client with source article links
 
+---
+
+## RAG (Retrieval-Augmented Generation)
+
+The assistant uses **RAG** to ground answers in your support content instead of relying only on the model’s training. This reduces hallucinations and keeps answers aligned with Daylight’s docs and FAQs.
+
+### Approach: Postgres full-text search (no embeddings)
+
+This project uses **PostgreSQL full-text search** rather than vector embeddings. That keeps the stack simple (no embedding API or vector DB) and works well for FAQ/support text where keyword and phrase match is effective.
+
+### Retrieval pipeline
+
+1. **Indexing** — Each `knowledge_base` row has a `search_vector` (`tsvector`) updated by a trigger on insert/update. Weights:
+   - **Title** → weight `A` (highest)
+   - **Category** and **tags** → weight `B`
+   - **Content** → weight `C`
+2. **Query** — The user’s latest message is passed to the `search_knowledge_base(search_query, match_count)` RPC.
+3. **Matching** — Postgres uses `websearch_to_tsquery('english', search_query)` so users can type natural questions; `ts_rank` orders by relevance.
+4. **Top‑K** — By default the top **3** articles are returned (`match_count` is configurable in the edge function).
+5. **Context injection** — Those articles are concatenated into a “RELEVANT KNOWLEDGE BASE ARTICLES” block and appended to the **system instruction** for Gemini.
+6. **Generation** — The model is instructed to base answers on the provided articles and to cite them by title.
+
+### Dual search (client + edge function)
+
+- **Edge function** — Runs RAG inside the `chat` function so every reply is grounded in retrieved articles and interactions can be logged (e.g. `chat_interactions`, deflection).
+- **Client** — Also calls `search_knowledge_base` so the UI can show **source citations** (links to the articles) next to the answer.
+
+### Extending the knowledge base
+
+- Add rows to `knowledge_base` (title, category, content, optional `source_url`, `tags`). The trigger keeps `search_vector` in sync.
+- Re-run the `seed-data` edge function with `"force": true` to replace content, or insert/update rows directly for incremental updates.
+
+---
+
+## Environment Variables
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `VITE_SUPABASE_URL` | Yes | Supabase project URL (e.g. `https://<project-ref>.supabase.co`) |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | Yes | Supabase anon/public key (safe for client-side) |
+
+**Edge function secrets** (set via `supabase secrets set`):
+
+| Secret | Required | Description |
+|--------|----------|-------------|
+| `GEMINI_API_KEY` | Yes | Google AI Studio API key for Gemini 2.5 Flash |
+
+`SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are provided automatically by Supabase in edge functions; you do not set them yourself.
+
+---
+
 ## Deployment
 
-### Via Supabase CLI (self-hosted)
+### Prerequisites
 
-1. Deploy edge functions: `supabase functions deploy`
-2. Push database migrations: `supabase db push`
-3. Build the frontend: `npm run build`
-4. Host the `dist/` folder on any static hosting provider (Vercel, Netlify, Cloudflare Pages, etc.)
+- Supabase project with migrations applied (`supabase db push`)
+- Edge functions deployed (`supabase functions deploy`) and `GEMINI_API_KEY` set
+- Knowledge base seeded (e.g. via `seed-data` function)
+
+### Frontend (static build)
+
+The app is a Vite SPA. Build for production:
+
+```sh
+npm run build
+```
+
+Output is in `dist/`. Deploy that folder to any static host.
+
+#### Vercel
+
+1. Import the repo in [Vercel](https://vercel.com).
+2. **Build command:** `npm run build`
+3. **Output directory:** `dist`
+4. **Environment variables:** Add `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` in the project settings.
+5. Redeploy after any env change.
+
+#### Netlify
+
+1. Connect the repo in [Netlify](https://netlify.com).
+2. **Build command:** `npm run build`
+3. **Publish directory:** `dist`
+4. In **Site settings → Environment variables**, add `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`.
+
+#### Cloudflare Pages
+
+1. Connect the repo in [Cloudflare Pages](https://pages.cloudflare.com).
+2. **Build command:** `npm run build`
+3. **Build output directory:** `dist`
+4. Add the same env vars under **Settings → Environment variables** (Vite requires `VITE_` prefix for client exposure).
+
+### Backend (Supabase)
+
+- **Database** — Run `supabase db push` for the project you use in production.
+- **Edge functions** — Run `supabase functions deploy` (or deploy per function). Ensure `GEMINI_API_KEY` is set in the same project.
+- **Seed** — After first deploy, call the `seed-data` function once (with `force: true` if you want to reset and re-seed).
+
+### Checklist
+
+- [ ] `supabase db push` applied to production project
+- [ ] `supabase secrets set GEMINI_API_KEY=...` for production
+- [ ] `supabase functions deploy` (at least `chat` and `seed-data`)
+- [ ] Knowledge base seeded via `seed-data`
+- [ ] Frontend env vars set on the static host (`VITE_SUPABASE_*`)
+- [ ] Build uses production Supabase URL (no localhost)
+
+---
+
+## Troubleshooting
+
+| Issue | What to check |
+|-------|----------------|
+| "GEMINI_API_KEY is not configured" | Set the secret: `supabase secrets set GEMINI_API_KEY=<your-key>` and redeploy the `chat` function. |
+| No / wrong sources in answers | Confirm `knowledge_base` has rows and run `search_knowledge_base` in SQL or via the client; check that the query is in English or matches your content. |
+| CORS or 401 on edge function | Ensure the request includes `Authorization: Bearer <anon-key>` and that the anon key is from the same project as the function. |
+| Blank or broken UI after deploy | Ensure `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` are set in the hosting platform (and that they start with `VITE_` so Vite embeds them in the client build). |
+| Local dev: function not found | Run `supabase functions serve` and point `VITE_SUPABASE_URL` to `http://localhost:54321` when testing against local functions. |
