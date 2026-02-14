@@ -66,15 +66,22 @@ export async function streamChat({
   });
 
   if (!resp.ok || !resp.body) {
+    let message = "Something went wrong. Please try again.";
     if (resp.status === 429) {
-      onError("I'm getting too many requests right now. Please try again in a moment.");
-      return;
+      message = "I'm getting too many requests right now. Please try again in a moment.";
+    } else if (resp.status === 402) {
+      message = "Service is temporarily unavailable. Please try again later.";
+    } else {
+      try {
+        const data = await resp.json();
+        if (data?.error && typeof data.error === "string") {
+          message = data.error;
+        }
+      } catch {
+        // use default message
+      }
     }
-    if (resp.status === 402) {
-      onError("Service is temporarily unavailable. Please try again later.");
-      return;
-    }
-    onError("Something went wrong. Please try again.");
+    onError(message);
     return;
   }
 
@@ -113,6 +120,11 @@ export async function streamChat({
 
        try {
          const parsed = JSON.parse(json);
+         if (parsed?.error && typeof parsed.error === "string") {
+           onError(parsed.error);
+           streamDone = true;
+           break;
+         }
          // Check for special __articles field
          if (parsed.__articles) {
            onArticles?.(parsed.__articles);
@@ -136,6 +148,10 @@ export async function streamChat({
       if (json === "[DONE]") continue;
       try {
         const parsed = JSON.parse(json);
+        if (parsed?.error && typeof parsed.error === "string") {
+          onError(parsed.error);
+          break;
+        }
         const content = parsed.choices?.[0]?.delta?.content;
         if (content) onDelta(content);
       } catch {}
