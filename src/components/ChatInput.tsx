@@ -45,7 +45,7 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
         placeholder="Ask anything about Daylight..."
         disabled={disabled}
         rows={1}
-        className="flex-1 resize-none rounded-xl border border-input bg-background px-4 py-3 text-lg font-body placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
+        className="flex-1 resize-none rounded-xl border border-input bg-background px-4 py-3 text-base sm:text-lg font-body placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
       />
       <Button
         onClick={handleSubmit}

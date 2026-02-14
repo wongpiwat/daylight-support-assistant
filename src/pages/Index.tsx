@@ -107,7 +107,7 @@ const Index = () => {
         <main className="flex-1 flex items-center justify-center bg-background p-4">
           <div className="w-full max-w-2xl h-[85vh] flex flex-col rounded-2xl border border-border bg-card shadow-xl overflow-hidden">
             <div className="gradient-warm px-6 py-5 flex items-center gap-3 shadow-warm">
-              <SidebarTrigger className="h-7 w-7 text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10" />
+              <SidebarTrigger className="h-12 w-12 text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10" />
               <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary-foreground/20 backdrop-blur-sm">
                 <Sun className="w-5 h-5 text-primary-foreground" />
               </div>
@@ -115,7 +115,7 @@ const Index = () => {
                 <h1 className="text-lg font-heading font-semibold text-primary-foreground">
                   Daylight Support
                 </h1>
-                <p className="text-sm text-primary-foreground/75">
+                <p className="text-base text-primary-foreground/75">
                   AI-powered assistant · Always here to help
                 </p>
               </div>

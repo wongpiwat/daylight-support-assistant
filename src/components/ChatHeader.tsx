@@ -10,7 +10,7 @@ export function ChatHeader() {
         <h1 className="text-lg font-heading font-semibold text-primary-foreground">
           Daylight Support
         </h1>
-        <p className="text-sm text-primary-foreground/75">
+        <p className="text-base text-primary-foreground/75">
           AI-powered assistant · Always here to help
         </p>
       </div>
