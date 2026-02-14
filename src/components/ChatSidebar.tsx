@@ -42,7 +42,7 @@ export function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete
           <div className="w-8 h-8 rounded-lg gradient-warm flex items-center justify-center">
             <Sun className="w-4 h-4 text-primary-foreground" />
           </div>
-          <span className="font-heading font-semibold text-sm text-sidebar-foreground">
+          <span className="font-heading font-semibold text-lg text-sidebar-foreground">
             Daylight
           </span>
         </div>
@@ -50,7 +50,7 @@ export function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete
           onClick={onNew}
           variant="outline"
           size="sm"
-          className="w-full mt-3 gap-2 text-xs font-body"
+          className="w-full mt-3 gap-2 text-sm font-body"
         >
           <Plus className="w-3.5 h-3.5" />
           New Chat
@@ -59,13 +59,13 @@ export function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel className="font-heading text-[11px] uppercase tracking-wider">
+          <SidebarGroupLabel className="font-heading text-sm uppercase tracking-wider">
             History
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className="gap-2">
               {conversations.length === 0 && (
-                <p className="px-3 py-6 text-xs text-muted-foreground text-center">
+                <p className="px-3 py-6 text-sm text-muted-foreground text-center">
                   No conversations yet
                 </p>
               )}
@@ -78,8 +78,8 @@ export function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete
                   >
                     <MessageSquare className="w-3.5 h-3.5 shrink-0" />
                     <div className="flex-1 min-w-0">
-                      <span className="block truncate text-xs">{convo.title}</span>
-                      <span className="block text-[10px] text-muted-foreground">
+                      <span className="block truncate text-sm">{convo.title}</span>
+                      <span className="block text-sm text-muted-foreground">
                         {formatTime(convo.updatedAt)}
                       </span>
                     </div>
@@ -107,8 +107,16 @@ export function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete
             Analytics Dashboard
           </Button>
         </Link>
-        <p className="text-[10px] text-muted-foreground text-center">
-          Powered by Daylight AI
+        <p className="text-sm text-muted-foreground text-center space-y-1">
+          <span className="block">Powered by Daylight AI</span>
+          <a
+            href="https://daylightcomputer.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary hover:underline block"
+          >
+            daylightcomputer.com
+          </a>
         </p>
       </SidebarFooter>
     </Sidebar>
