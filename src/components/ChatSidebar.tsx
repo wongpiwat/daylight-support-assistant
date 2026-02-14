@@ -63,7 +63,7 @@ export function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete
             History
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="gap-2">
               {conversations.length === 0 && (
                 <p className="px-3 py-6 text-xs text-muted-foreground text-center">
                   No conversations yet
