@@ -17,7 +17,7 @@ interface SuggestionChipsProps {
 
 export function SuggestionChips({ onSelect, disabled }: SuggestionChipsProps) {
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="flex flex-row flex-wrap justify-center gap-2">
       {suggestions.map((s) => (
         <Button
           key={s.label}
