@@ -9,7 +9,8 @@ import { streamChat, type Message, type Article } from "@/lib/chat";
 import { useConversations } from "@/hooks/use-conversations";
 import { useToast } from "@/hooks/use-toast";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { Sun } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Sun, ChevronDown, MessageCircle } from "lucide-react";
 
 const Index = () => {
   const {
@@ -24,6 +25,7 @@ const Index = () => {
   } = useConversations();
 
   const [isLoading, setIsLoading] = useState(false);
+  const [showSuggestionsMobile, setShowSuggestionsMobile] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -149,7 +151,27 @@ const Index = () => {
 
             {!showWelcome && (
               <div className="px-6 pb-2">
-                <SuggestionChips onSelect={send} disabled={isLoading} />
+                <button
+                  type="button"
+                  onClick={() => setShowSuggestionsMobile((v) => !v)}
+                  className="md:hidden flex items-center gap-2 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  aria-expanded={showSuggestionsMobile}
+                  aria-label={showSuggestionsMobile ? "Hide suggestion questions" : "Show suggestion questions"}
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  <span>{showSuggestionsMobile ? "Hide suggestions" : "Suggestion questions"}</span>
+                  <ChevronDown
+                    className={cn("w-4 h-4 transition-transform", showSuggestionsMobile && "rotate-180")}
+                  />
+                </button>
+                <div
+                  className={cn(
+                    "flex flex-row flex-wrap overflow-x-hidden h-24",
+                    !showSuggestionsMobile && "max-md:hidden"
+                  )}
+                >
+                  <SuggestionChips onSelect={send} disabled={isLoading} />
+                </div>
               </div>
             )}
 
